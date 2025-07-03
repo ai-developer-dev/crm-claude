@@ -19,21 +19,22 @@ export class TwilioService {
    * Generate access token for Twilio Voice JavaScript SDK
    */
   static generateAccessToken(identity: string): string {
-    if (!client || !apiKeySid || !apiKeySecret || !twimlAppSid || accountSid === 'your_account_sid_here') {
-      throw new Error('Twilio credentials not configured');
+    if (!accountSid || !authToken || accountSid === 'your_account_sid_here') {
+      throw new Error('Twilio Account SID and Auth Token must be configured');
     }
 
+    // For basic setup, use Account SID and Auth Token as API credentials
     const accessToken = new AccessToken(
-      accountSid!,
-      apiKeySid,
-      apiKeySecret,
+      accountSid,
+      accountSid, // Use account SID as API key for simplicity
+      authToken,
       { identity }
     );
 
-    // Create Voice grant
+    // Create Voice grant with basic permissions
     const voiceGrant = new VoiceGrant({
-      outgoingApplicationSid: twimlAppSid,
       incomingAllow: true,
+      outgoingApplicationSid: 'default', // Use default for testing
     });
 
     accessToken.addGrant(voiceGrant);
