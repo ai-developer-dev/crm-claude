@@ -1,9 +1,6 @@
 {
   "build": {
-    "command": "npm run build"
-  },
-  "start": {
-    "command": "npm run start"
+    "builder": "DOCKERFILE"
   },
   "healthcheck": {
     "path": "/health"
