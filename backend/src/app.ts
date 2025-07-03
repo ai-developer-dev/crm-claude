@@ -17,14 +17,14 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-njxe42swv-doug-allens-projects.vercel.app"],
     methods: ["GET", "POST"]
   }
 });
 
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-njxe42swv-doug-allens-projects.vercel.app"],
   credentials: true
 }));
 app.use(morgan('combined'));
