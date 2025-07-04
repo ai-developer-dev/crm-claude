@@ -22,7 +22,14 @@ export class TwilioService {
     console.log('Environment check:', {
       accountSid: accountSid ? `${accountSid.substring(0, 6)}...` : 'undefined',
       authToken: authToken ? 'set' : 'undefined',
-      nodeEnv: process.env.NODE_ENV
+      nodeEnv: process.env.NODE_ENV,
+      allTwilioVars: {
+        TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID ? 'set' : 'undefined',
+        TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN ? 'set' : 'undefined',
+        TWILIO_API_KEY_SID: process.env.TWILIO_API_KEY_SID ? 'set' : 'undefined',
+        TWILIO_API_KEY_SECRET: process.env.TWILIO_API_KEY_SECRET ? 'set' : 'undefined',
+        TWILIO_TWIML_APP_SID: process.env.TWILIO_TWIML_APP_SID ? 'set' : 'undefined'
+      }
     });
     
     if (!accountSid || !authToken || accountSid === 'your_account_sid_here') {
