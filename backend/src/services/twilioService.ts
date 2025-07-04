@@ -23,23 +23,36 @@ export class TwilioService {
       throw new Error('Twilio Account SID and Auth Token must be configured');
     }
 
-    // For basic setup, use Account SID and Auth Token as API credentials
-    const accessToken = new AccessToken(
-      accountSid,
-      accountSid, // Use account SID as API key for simplicity
-      authToken,
-      { identity }
-    );
+    // Sanitize identity to only contain valid characters (alphanumeric and underscore)
+    const sanitizedIdentity = identity.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 121);
 
-    // Create Voice grant with basic permissions
-    const voiceGrant = new VoiceGrant({
-      incomingAllow: true,
-      outgoingApplicationSid: 'default', // Use default for testing
-    });
+    // For testing without API keys, create a basic client capability token
+    // Note: This is a simplified approach for development/testing
+    try {
+      // Create access token with Account SID (for basic testing)
+      const accessToken = new AccessToken(
+        accountSid,
+        accountSid,
+        authToken,
+        { 
+          identity: sanitizedIdentity,
+          ttl: 3600 // 1 hour expiration
+        }
+      );
 
-    accessToken.addGrant(voiceGrant);
+      // Create Voice grant with minimal permissions
+      const voiceGrant = new VoiceGrant({
+        incomingAllow: true,
+        outgoingApplicationSid: accountSid, // Use account SID as fallback
+      });
 
-    return accessToken.toJwt();
+      accessToken.addGrant(voiceGrant);
+
+      return accessToken.toJwt();
+    } catch (error) {
+      console.error('Error generating Twilio access token:', error);
+      throw new Error('Failed to generate access token: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   }
 
   /**

@@ -13,13 +13,13 @@ router.get('/token', authenticateToken, async (req: any, res: any) => {
       return;
     }
 
-    // Use user email or ID as Twilio identity
-    const identity = user.email || user.userId;
-    const token = TwilioService.generateAccessToken(identity);
+    // Use user email or ID as Twilio identity (will be sanitized in service)
+    const rawIdentity = user.email || user.userId || 'user';
+    const token = TwilioService.generateAccessToken(rawIdentity);
 
     res.json({
       token,
-      identity,
+      identity: rawIdentity,
     });
   } catch (error) {
     console.error('Error generating Twilio token:', error);
