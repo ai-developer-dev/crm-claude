@@ -19,6 +19,12 @@ export class TwilioService {
    * Generate access token for Twilio Voice JavaScript SDK
    */
   static generateAccessToken(identity: string): string {
+    console.log('Environment check:', {
+      accountSid: accountSid ? `${accountSid.substring(0, 6)}...` : 'undefined',
+      authToken: authToken ? 'set' : 'undefined',
+      nodeEnv: process.env.NODE_ENV
+    });
+    
     if (!accountSid || !authToken || accountSid === 'your_account_sid_here') {
       throw new Error('Twilio Account SID and Auth Token must be configured');
     }
