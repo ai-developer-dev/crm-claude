@@ -37,12 +37,26 @@ router.post('/voice', async (req: any, res: any) => {
     
     console.log('Incoming call:', { From, To, CallSid });
 
-    // For now, route all incoming calls to queue
-    // In production, you might route based on dialed number or IVR
-    const twiml = TwilioService.generateIncomingCallTwiML();
+    // For now, get the first available user from the database
+    // In production, you might route based on dialed number, IVR, or user availability
+    const { UserService } = require('../services/userService');
+    const users = await UserService.getAllUsers();
+    const firstActiveUser = users.find((user: any) => user.is_active);
     
-    res.type('text/xml');
-    res.send(twiml);
+    if (firstActiveUser) {
+      // Use the same identity format as the token generation (sanitized email)
+      const userIdentity = firstActiveUser.email.replace(/[^a-zA-Z0-9_]/g, '_').substring(0, 121);
+      const twiml = TwilioService.generateIncomingCallTwiML(userIdentity);
+      
+      res.type('text/xml');
+      res.send(twiml);
+    } else {
+      // No active users, route to queue
+      const twiml = TwilioService.generateIncomingCallTwiML();
+      
+      res.type('text/xml');
+      res.send(twiml);
+    }
   } catch (error) {
     console.error('Error handling incoming call:', error);
     res.status(500).send('Internal Server Error');
