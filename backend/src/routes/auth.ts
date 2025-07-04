@@ -130,6 +130,7 @@ router.get('/me', authenticateToken, async (req: any, res: any) => {
         email: user.email,
         extension: user.extension,
         is_active: user.is_active,
+        role: user.role,
         created_at: user.created_at,
         updated_at: user.updated_at
       }

@@ -32,6 +32,7 @@ router.get('/:id', authenticateToken, async (req: any, res: any) => {
         email: user.email,
         extension: user.extension,
         is_active: user.is_active,
+        role: user.role,
         created_at: user.created_at,
         updated_at: user.updated_at
       }
@@ -45,7 +46,7 @@ router.get('/:id', authenticateToken, async (req: any, res: any) => {
 router.put('/:id', authenticateToken, async (req: any, res: any) => {
   try {
     const { id } = req.params;
-    const { name, email, extension, is_active } = req.body;
+    const { name, email, extension, is_active, role } = req.body;
     
     // Basic validation
     if (email) {
@@ -72,7 +73,8 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
       name,
       email,
       extension,
-      is_active
+      is_active,
+      role
     });
     
     if (!updatedUser) {
@@ -88,6 +90,7 @@ router.put('/:id', authenticateToken, async (req: any, res: any) => {
         email: updatedUser.email,
         extension: updatedUser.extension,
         is_active: updatedUser.is_active,
+        role: updatedUser.role,
         created_at: updatedUser.created_at,
         updated_at: updatedUser.updated_at
       }
@@ -178,6 +181,7 @@ router.put('/me/profile', authenticateToken, async (req: any, res: any) => {
         email: updatedUser.email,
         extension: updatedUser.extension,
         is_active: updatedUser.is_active,
+        role: updatedUser.role,
         created_at: updatedUser.created_at,
         updated_at: updatedUser.updated_at
       }
