@@ -63,7 +63,7 @@ export const Dashboard: React.FC = () => {
     // Create parking slots 1-6
     const slots: ParkingSlot[] = Array.from({ length: 6 }, (_, i) => ({
       id: `parking-${i + 1}`,
-      slotNumber: i + 1,
+      number: i + 1,
       isOccupied: false,
       call: undefined,
     }));
