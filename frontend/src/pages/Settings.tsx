@@ -50,6 +50,7 @@ export const Settings: React.FC = () => {
 
   const handleUpdateUser = async (userId: string, userData: Partial<User>) => {
     try {
+      console.log('Updating user:', userId, 'with data:', userData);
       const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
         method: 'PUT',
         headers: {
@@ -60,10 +61,13 @@ export const Settings: React.FC = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        console.log('Update successful:', result);
         await fetchUsers();
         setEditingUser(null);
       } else {
         const data = await response.json();
+        console.log('Update failed:', data);
         throw new Error(data.error || 'Failed to update user');
       }
     } catch (error) {
@@ -71,7 +75,7 @@ export const Settings: React.FC = () => {
     }
   };
 
-  const handleCreateUser = async (userData: { name: string; email: string; password: string; extension: string }) => {
+  const handleCreateUser = async (userData: { name: string; email: string; password: string; extension: string; role: 'admin' | 'user' }) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
