@@ -5,6 +5,7 @@ export interface User {
   password_hash: string;
   extension: string;
   is_active: boolean;
+  role: 'admin' | 'user';
   created_at: Date;
   updated_at: Date;
 }
@@ -14,6 +15,7 @@ export interface CreateUserInput {
   email: string;
   password: string;
   extension: string;
+  role?: 'admin' | 'user';
 }
 
 export interface UpdateUserInput {
@@ -21,4 +23,5 @@ export interface UpdateUserInput {
   email?: string;
   extension?: string;
   is_active?: boolean;
+  role?: 'admin' | 'user';
 }

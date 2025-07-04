@@ -4,7 +4,7 @@ import { hashPassword, comparePassword } from '../utils/auth';
 
 export class UserService {
   static async createUser(userData: CreateUserInput): Promise<User> {
-    const { name, email, password, extension } = userData;
+    const { name, email, password, extension, role = 'user' } = userData;
     
     // Check if user already exists
     const existingUser = await this.findByEmail(email);
@@ -21,10 +21,10 @@ export class UserService {
     const passwordHash = await hashPassword(password);
     
     const result = await query(
-      `INSERT INTO users (name, email, password_hash, extension)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, extension, is_active, created_at, updated_at`,
-      [name, email, passwordHash, extension]
+      `INSERT INTO users (name, email, password_hash, extension, role)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, name, email, extension, is_active, role, created_at, updated_at`,
+      [name, email, passwordHash, extension, role]
     );
     
     return result.rows[0];
@@ -59,14 +59,14 @@ export class UserService {
   
   static async getAllUsers(): Promise<User[]> {
     const result = await query(
-      'SELECT id, name, email, extension, is_active, created_at, updated_at FROM users ORDER BY name'
+      'SELECT id, name, email, extension, is_active, role, created_at, updated_at FROM users ORDER BY name'
     );
     
     return result.rows;
   }
   
   static async updateUser(id: string, userData: UpdateUserInput): Promise<User | null> {
-    const { name, email, extension, is_active } = userData;
+    const { name, email, extension, is_active, role } = userData;
     
     // Check if email is being changed and if it's already taken
     if (email) {
@@ -104,6 +104,10 @@ export class UserService {
       setClause.push(`is_active = $${paramCount++}`);
       values.push(is_active);
     }
+    if (role !== undefined) {
+      setClause.push(`role = $${paramCount++}`);
+      values.push(role);
+    }
     
     if (setClause.length === 0) {
       return this.findById(id);
@@ -114,7 +118,7 @@ export class UserService {
     const result = await query(
       `UPDATE users SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP
        WHERE id = $${paramCount}
-       RETURNING id, name, email, extension, is_active, created_at, updated_at`,
+       RETURNING id, name, email, extension, is_active, role, created_at, updated_at`,
       values
     );
     

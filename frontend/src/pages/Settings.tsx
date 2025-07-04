@@ -7,6 +7,7 @@ interface User {
   email: string;
   extension: string;
   is_active: boolean;
+  role: 'admin' | 'user';
   created_at: string;
   updated_at: string;
 }
@@ -228,6 +229,9 @@ export const Settings: React.FC = () => {
                         Extension
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -246,6 +250,13 @@ export const Settings: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {user.extension}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {user.role === 'admin' ? 'Admin' : 'User'}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -301,7 +312,7 @@ export const Settings: React.FC = () => {
 };
 
 interface CreateUserModalProps {
-  onSave: (userData: { name: string; email: string; password: string; extension: string }) => void;
+  onSave: (userData: { name: string; email: string; password: string; extension: string; role: 'admin' | 'user' }) => void;
   onCancel: () => void;
 }
 
@@ -311,6 +322,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onSave, onCancel }) =
     email: '',
     password: '',
     extension: '',
+    role: 'user' as 'admin' | 'user',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -364,6 +376,18 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ onSave, onCancel }) =
               required
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'user' })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
           <div className="flex justify-end space-x-3">
             <button
               type="button"
@@ -397,6 +421,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onSave, onCancel })
     email: user.email,
     extension: user.extension,
     is_active: user.is_active,
+    role: user.role,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -438,6 +463,18 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onSave, onCancel })
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
               required
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Role</label>
+            <select
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'user' })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              required
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           <div className="flex items-center">
             <input

@@ -8,7 +8,7 @@ const router = express.Router();
 // Register new user
 router.post('/register', async (req: any, res: any) => {
   try {
-    const { name, email, password, extension } = req.body;
+    const { name, email, password, extension, role } = req.body;
     
     // Validation
     if (!name || !email || !password || !extension) {
@@ -39,7 +39,7 @@ router.post('/register', async (req: any, res: any) => {
       });
     }
     
-    const user = await UserService.createUser({ name, email, password, extension });
+    const user = await UserService.createUser({ name, email, password, extension, role });
     
     const token = generateToken({
       userId: user.id,
@@ -54,7 +54,8 @@ router.post('/register', async (req: any, res: any) => {
         name: user.name,
         email: user.email,
         extension: user.extension,
-        is_active: user.is_active
+        is_active: user.is_active,
+        role: user.role
       }
     });
   } catch (error) {
@@ -103,7 +104,8 @@ router.post('/login', async (req: any, res: any) => {
         name: user.name,
         email: user.email,
         extension: user.extension,
-        is_active: user.is_active
+        is_active: user.is_active,
+        role: user.role
       }
     });
   } catch (error) {
