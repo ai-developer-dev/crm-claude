@@ -17,7 +17,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-jade-nine-23.vercel.app"],
+    origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-gtkmy18di-doug-allens-projects.vercel.app"],
     methods: ["GET", "POST"]
   }
 });
