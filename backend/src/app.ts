@@ -17,7 +17,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-6jq3p7stt-doug-allens-projects.vercel.app"],
+    origin: process.env.FRONTEND_URL || ["http://localhost:3000", "https://frontend-ws5xh5f44-doug-allens-projects.vercel.app"],
     methods: ["GET", "POST"]
   }
 });
