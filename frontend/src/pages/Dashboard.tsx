@@ -39,10 +39,19 @@ export const Dashboard: React.FC = () => {
 
   // Update current user's call status when Twilio call state changes
   useEffect(() => {
-    if (currentUser && users.length > 0) {
+    if (currentUser) {
+      console.log('Twilio call state changed:', {
+        isTwilioConnected,
+        callStartTime,
+        callDirection,
+        callPhoneNumber,
+        currentUserEmail: currentUser.email
+      });
+      
       setUsers(prev => prev.map(user => {
         if (user.email === currentUser.email) {
           if (isTwilioConnected && callStartTime && callDirection && callPhoneNumber) {
+            console.log('Setting user as on-call:', user.email);
             return {
               ...user,
               status: 'on-call',
@@ -56,6 +65,7 @@ export const Dashboard: React.FC = () => {
               }
             };
           } else {
+            console.log('Setting user as available:', user.email);
             return {
               ...user,
               status: 'available',
@@ -66,7 +76,7 @@ export const Dashboard: React.FC = () => {
         return user;
       }));
     }
-  }, [currentUser, users.length, isTwilioConnected, callStartTime, callDirection, callPhoneNumber]);
+  }, [currentUser?.email, isTwilioConnected, callStartTime, callDirection, callPhoneNumber]);
 
   const fetchUsers = async () => {
     try {

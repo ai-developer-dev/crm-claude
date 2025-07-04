@@ -49,7 +49,7 @@ export const UserCallControls: React.FC<UserCallControlsProps> = ({
         </span>
       </div>
       
-      <div className="text-sm text-blue-700 mb-3">
+      <div className="text-sm text-blue-700 mb-3 font-medium">
         {callDirection === 'inbound' 
           ? `From: ${phoneNumber}`
           : `To: ${phoneNumber}`

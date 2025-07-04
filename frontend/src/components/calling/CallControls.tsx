@@ -84,12 +84,16 @@ export const CallControls: React.FC = () => {
 
       {/* Incoming Call */}
       {incomingCall && (
-        <div className="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-4">
+        <div className="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-4 animate-pulse">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-yellow-800">Incoming Call</h3>
-              <p className="text-sm text-yellow-600">
-                From: {incomingCall.parameters?.From || 'Unknown'}
+              <h3 className="font-medium text-yellow-800">📞 Incoming Call</h3>
+              <p className="text-sm text-yellow-600 font-medium">
+                From: {incomingCall.parameters?.From || 'Unknown Number'}
+              </p>
+              {/* Debug info */}
+              <p className="text-xs text-gray-500 mt-1">
+                Call parameters: {JSON.stringify(incomingCall.parameters)}
               </p>
             </div>
             <div className="flex space-x-2">

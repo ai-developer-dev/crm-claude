@@ -180,6 +180,7 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
   // Answer incoming call
   const answerCall = () => {
     if (incomingCall) {
+      console.log('Answering call with parameters:', incomingCall.parameters);
       incomingCall.accept();
     }
   };
