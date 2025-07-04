@@ -1,6 +1,9 @@
 import React from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { DashboardUser, Call } from '../../types/dashboard';
+import { UserCallControls } from '../calling/UserCallControls';
+import { useTwilio } from '../../contexts/TwilioContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface UserCardProps {
   user: DashboardUser;
@@ -29,6 +32,21 @@ export const UserCard: React.FC<UserCardProps> = ({
   onAcceptCall, 
   onTransferCall 
 }) => {
+  const { user: currentUser } = useAuth();
+  const { 
+    isConnected: isTwilioConnected,
+    callStartTime,
+    callDirection,
+    callPhoneNumber
+  } = useTwilio();
+  
+  // Check if this is the current user and they have an active Twilio call
+  const isCurrentUserOnTwilioCall = currentUser && 
+    user.email === currentUser.email && 
+    isTwilioConnected && 
+    callStartTime && 
+    callDirection && 
+    callPhoneNumber;
   const {
     attributes,
     listeners,
@@ -98,7 +116,13 @@ export const UserCard: React.FC<UserCardProps> = ({
         </div>
 
         {/* Current Call Info */}
-        {user.currentCall && (
+        {isCurrentUserOnTwilioCall ? (
+          <UserCallControls
+            callStartTime={callStartTime!}
+            callDirection={callDirection!}
+            phoneNumber={callPhoneNumber!}
+          />
+        ) : user.currentCall && (
           <div className="bg-blue-50 rounded-md p-3 mt-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-blue-800">

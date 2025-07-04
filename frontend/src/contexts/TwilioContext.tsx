@@ -10,6 +10,9 @@ interface TwilioContextType {
   currentCall: any | null;
   incomingCall: any | null;
   error: string | null;
+  callStartTime: Date | null;
+  callDirection: 'inbound' | 'outbound' | null;
+  callPhoneNumber: string | null;
   makeCall: (phoneNumber: string) => Promise<void>;
   answerCall: () => void;
   rejectCall: () => void;
@@ -34,6 +37,9 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
   const [currentCall, setCurrentCall] = useState<any | null>(null);
   const [incomingCall, setIncomingCall] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [callStartTime, setCallStartTime] = useState<Date | null>(null);
+  const [callDirection, setCallDirection] = useState<'inbound' | 'outbound' | null>(null);
+  const [callPhoneNumber, setCallPhoneNumber] = useState<string | null>(null);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
@@ -84,6 +90,8 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
       newDevice.on('incoming', (call) => {
         console.log('Incoming call:', call.parameters);
         setIncomingCall(call);
+        setCallDirection('inbound');
+        setCallPhoneNumber(call.parameters?.From || 'Unknown');
         
         // Set up call event listeners
         setupCallEventListeners(call);
@@ -113,6 +121,7 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
       setIsConnecting(false);
       setCurrentCall(call);
       setIncomingCall(null);
+      setCallStartTime(new Date());
     });
 
     call.on('disconnect', () => {
@@ -121,6 +130,9 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
       setIsConnecting(false);
       setCurrentCall(null);
       setIncomingCall(null);
+      setCallStartTime(null);
+      setCallDirection(null);
+      setCallPhoneNumber(null);
     });
 
     call.on('reject', () => {
@@ -146,6 +158,8 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
     try {
       setError(null);
       setIsConnecting(true);
+      setCallDirection('outbound');
+      setCallPhoneNumber(phoneNumber);
 
       const call = await device.connect({
         params: {
@@ -180,7 +194,13 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
   // Hangup current call
   const hangupCall = () => {
     if (currentCall) {
+      console.log('Hanging up call:', currentCall);
       currentCall.disconnect();
+    } else if (incomingCall) {
+      console.log('Rejecting incoming call:', incomingCall);
+      incomingCall.reject();
+    } else {
+      console.log('No call to hang up');
     }
   };
 
@@ -227,6 +247,9 @@ export const TwilioProvider: React.FC<TwilioProviderProps> = ({ children }) => {
     currentCall,
     incomingCall,
     error,
+    callStartTime,
+    callDirection,
+    callPhoneNumber,
     makeCall,
     answerCall,
     rejectCall,

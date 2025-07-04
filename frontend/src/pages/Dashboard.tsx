@@ -15,7 +15,14 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const Dashboard: React.FC = () => {
   const { user: currentUser, logout, token } = useAuth();
-  const { isReady: twilioReady, error: twilioError } = useTwilio();
+  const { 
+    isReady: twilioReady, 
+    error: twilioError, 
+    isConnected: isTwilioConnected,
+    callStartTime,
+    callDirection,
+    callPhoneNumber
+  } = useTwilio();
   const [users, setUsers] = useState<DashboardUser[]>([]);
   const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
   const [incomingCallsQueue, setIncomingCallsQueue] = useState<Call[]>([]);
@@ -29,6 +36,37 @@ export const Dashboard: React.FC = () => {
     fetchUsers();
     initializeParkingSlots();
   }, []);
+
+  // Update current user's call status when Twilio call state changes
+  useEffect(() => {
+    if (currentUser && users.length > 0) {
+      setUsers(prev => prev.map(user => {
+        if (user.email === currentUser.email) {
+          if (isTwilioConnected && callStartTime && callDirection && callPhoneNumber) {
+            return {
+              ...user,
+              status: 'on-call',
+              currentCall: {
+                id: `twilio-${Date.now()}`,
+                type: callDirection,
+                from: callDirection === 'inbound' ? callPhoneNumber : currentUser.extension,
+                to: callDirection === 'inbound' ? currentUser.extension : callPhoneNumber,
+                startTime: callStartTime,
+                status: 'connected'
+              }
+            };
+          } else {
+            return {
+              ...user,
+              status: 'available',
+              currentCall: undefined
+            };
+          }
+        }
+        return user;
+      }));
+    }
+  }, [currentUser, users.length, isTwilioConnected, callStartTime, callDirection, callPhoneNumber]);
 
   const fetchUsers = async () => {
     try {
