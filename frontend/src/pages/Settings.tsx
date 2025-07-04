@@ -70,6 +70,28 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleCreateUser = async (userData: { name: string; email: string; password: string; extension: string }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        await fetchUsers();
+        setIsCreating(false);
+      } else {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create user');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to create user');
+    }
+  };
+
   const handleDeleteUser = async (userId: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) {
       return;
@@ -121,12 +143,20 @@ export const Settings: React.FC = () => {
                 Manage users and system configuration
               </p>
             </div>
-            <button
-              onClick={logout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => window.location.href = '/'}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Back to Dashboard
+              </button>
+              <button
+                onClick={logout}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
 
@@ -174,8 +204,14 @@ export const Settings: React.FC = () => {
         {/* Users Management */}
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">All Users</h2>
+              <button
+                onClick={() => setIsCreating(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Add New User
+              </button>
             </div>
             <div className="px-6 py-4">
               <div className="overflow-x-auto">
@@ -243,6 +279,14 @@ export const Settings: React.FC = () => {
           </div>
         </div>
 
+        {/* Create User Modal */}
+        {isCreating && (
+          <CreateUserModal
+            onSave={handleCreateUser}
+            onCancel={() => setIsCreating(false)}
+          />
+        )}
+
         {/* Edit User Modal */}
         {editingUser && (
           <EditUserModal
@@ -251,6 +295,91 @@ export const Settings: React.FC = () => {
             onCancel={() => setEditingUser(null)}
           />
         )}
+      </div>
+    </div>
+  );
+};
+
+interface CreateUserModalProps {
+  onSave: (userData: { name: string; email: string; password: string; extension: string }) => void;
+  onCancel: () => void;
+}
+
+const CreateUserModal: React.FC<CreateUserModalProps> = ({ onSave, onCancel }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    extension: '',
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+      <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Add New User</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+              minLength={6}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Extension</label>
+            <input
+              type="text"
+              value={formData.extension}
+              onChange={(e) => setFormData({ ...formData, extension: e.target.value })}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Create User
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

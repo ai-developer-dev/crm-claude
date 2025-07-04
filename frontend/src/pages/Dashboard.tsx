@@ -7,7 +7,6 @@ import { IncomingCalls } from '../components/dashboard/IncomingCalls';
 import { CallControls } from '../components/calling/CallControls';
 import { useAuth } from '../contexts/AuthContext';
 import { useTwilio } from '../contexts/TwilioContext';
-import { mockUsers, mockParkingSlots, incomingCalls } from '../data/mockData';
 import { DashboardUser, Call, ParkingSlot } from '../types/dashboard';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -15,12 +14,61 @@ import 'react-resizable/css/styles.css';
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 export const Dashboard: React.FC = () => {
-  const { user: currentUser, logout } = useAuth();
+  const { user: currentUser, logout, token } = useAuth();
   const { isReady: twilioReady, error: twilioError } = useTwilio();
-  const [users, setUsers] = useState<DashboardUser[]>(mockUsers);
-  const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>(mockParkingSlots);
-  const [incomingCallsQueue, setIncomingCallsQueue] = useState<Call[]>(incomingCalls);
+  const [users, setUsers] = useState<DashboardUser[]>([]);
+  const [parkingSlots, setParkingSlots] = useState<ParkingSlot[]>([]);
+  const [incomingCallsQueue, setIncomingCallsQueue] = useState<Call[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+  // Fetch users from API
+  useEffect(() => {
+    fetchUsers();
+    initializeParkingSlots();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Convert API users to DashboardUser format
+        const dashboardUsers: DashboardUser[] = data.users.map((user: any) => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          extension: user.extension,
+          status: user.is_active ? 'available' : 'offline',
+          currentCall: undefined,
+        }));
+        setUsers(dashboardUsers);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const initializeParkingSlots = () => {
+    // Create parking slots 1-6
+    const slots: ParkingSlot[] = Array.from({ length: 6 }, (_, i) => ({
+      id: `parking-${i + 1}`,
+      slotNumber: i + 1,
+      isOccupied: false,
+      call: undefined,
+    }));
+    setParkingSlots(slots);
+  };
 
   // Grid layout configuration
   const layouts = {
@@ -220,12 +268,12 @@ export const Dashboard: React.FC = () => {
                   {users.filter(u => u.status === 'on-call').length} on calls
                 </span>
               </div>
-              <a
-                href="/settings"
+              <button
+                onClick={() => window.location.href = '/settings'}
                 className="text-gray-500 hover:text-gray-700 text-sm"
               >
                 Settings
-              </a>
+              </button>
               <button
                 onClick={logout}
                 className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
@@ -275,18 +323,35 @@ export const Dashboard: React.FC = () => {
             <div key="users-grid">
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Team</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {users.map((user) => (
-                    <UserCard
-                      key={user.id}
-                      user={user}
-                      onAcceptCall={(callId, userId) => console.log('Accept call', callId, userId)}
-                      onTransferCall={(callId, fromUserId, toUserId) => 
-                        console.log('Transfer call', callId, fromUserId, toUserId)
-                      }
-                    />
-                  ))}
-                </div>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-gray-600">Loading users...</span>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No users found.</p>
+                    <button
+                      onClick={() => window.location.href = '/settings'}
+                      className="mt-2 text-blue-600 hover:text-blue-800"
+                    >
+                      Add users in Settings
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {users.map((user) => (
+                      <UserCard
+                        key={user.id}
+                        user={user}
+                        onAcceptCall={(callId, userId) => console.log('Accept call', callId, userId)}
+                        onTransferCall={(callId, fromUserId, toUserId) => 
+                          console.log('Transfer call', callId, fromUserId, toUserId)
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </ResponsiveGridLayout>
